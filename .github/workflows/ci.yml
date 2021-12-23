@@ -28,7 +28,6 @@ jobs:
           - {platform: ubuntu-latest, python-version: 3.7}
           - {platform: ubuntu-latest, python-version: 3.8}
           - {platform: ubuntu-latest, python-version: 3.9}
-          - {platform: windows-latest, python-version: 3.9}
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python ${{ matrix.config.python-version }}
