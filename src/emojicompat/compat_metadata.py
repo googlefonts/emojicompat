@@ -35,14 +35,8 @@ class CompatEntry(NamedTuple):
         )
 
 
-def _thirdparty_dir() -> Path:
-    result = Path(__file__).parent / "../../third_party"
-    assert result.is_dir()
-    return result
-
-
 def metadata() -> Tuple[CompatEntry, ...]:
-    with open(_thirdparty_dir() / "android/emoji_metadata.txt") as f:
+    with open(Path(__file__).parent / "emoji_metadata.txt") as f:
         return tuple(
             CompatEntry.fromstring(l)
             for l in f
