@@ -1,0 +1,1 @@
+content generated with flatc -p emoji_metadata.fbs
