@@ -25,10 +25,17 @@ extras_require={
 }
 extras_require["dev"] = extras_require["test"] + extras_require["lint"]
 
+
+def _echo(m, l):
+  print("HELLO", m, l)
+  return l
+
 setup(
     name="emojicompat",
     use_scm_version={"write_to": "src/emojicompat/_version.py"},
-    package_dir={"": "src"},
+    package_dir={
+      "": "src",
+    },
     packages=find_packages(where="src"),
     entry_points={"console_scripts": ["emojicompat=emojicompat.emojicompat:main"]},
     setup_requires=["setuptools_scm"],

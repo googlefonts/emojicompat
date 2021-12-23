@@ -12,9 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest
+
+from pathlib import Path
 
 
-# TODO remove
-def test_tests_are_working():
-    assert 1 == 1
+def testdata_dir() -> Path:
+    result = Path(__file__).parent / "testdata"
+    assert result.is_dir()
+    return result
