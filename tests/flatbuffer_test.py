@@ -14,12 +14,25 @@
 
 import flatbuffers
 import pytest
-from testdata_helper import *
+import tempfile
+from typing import NamedTuple, Tuple
 
-from androidx.text.emoji.flatbuffer.MetadataList import MetadataList
+from emojicompat.compat_metadata import *
+from emojicompat.flatbuffer import *
+from testdata_helper import *
 
 
 def test_parse_sample_dat():
-    buf = bytearray((testdata_dir() / "noto_emji_2_028.dat").read_bytes())
-    metadata_list = MetadataList.GetRootAsMetadataList(buf, 0)
-    assert metadata_list.ListLength() > 0  # verification of exact contents elsewhere
+    flat_list = read_2_028_sample()
+    assert flat_list.ListLength() > 0  # verification of exact contents elsewhere
+
+
+def test_roundtrip():
+    before = FlatbufferList.fromflat(read_2_028_sample())
+    after = FlatbufferList.fromflatbytes(before.toflatbytes())
+    assert before == after
+
+
+# NOTE: originally wanted to confirm binary identical recreation of 2.028
+# but despite getting binaries with equivalent json the bytes differ; in
+# retrospect this is fine.

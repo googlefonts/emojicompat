@@ -13,26 +13,20 @@
 # limitations under the License.
 
 import pytest
+from typing import NamedTuple, Tuple
 
-from androidx.text.emoji.flatbuffer.MetadataList import MetadataList
-from emojicompat import compat_metadata
+from androidx.text.emoji.flatbuffer.MetadataItem import *
+from androidx.text.emoji.flatbuffer.MetadataList import *
+
+from emojicompat.compat_metadata import *
+from emojicompat.flatbuffer import *
 from testdata_helper import *
 
 
 def test_emoji_metadata_superset_2_028_emoji():
-    buf = bytearray((testdata_dir() / "noto_emji_2_028.dat").read_bytes())
-    flat_list = MetadataList.GetRootAsMetadataList(buf, 0)
-    flat_entries = tuple(flat_list.List(i) for i in range(flat_list.ListLength()))
-    flat_entries = [
-        compat_metadata.CompatEntry(
-            e.Id(),
-            e.SdkAdded(),
-            e.CompatAdded(),
-            tuple(e.Codepoints(i) for i in range(e.CodepointsLength())),
-        )
-        for e in flat_entries
-    ]
-    compat_entries = compat_metadata.metadata()
+    flat_list = read_2_028_sample()
+    flat_entries = FlatbufferList.fromflat(flat_list).compat_entries()
+    compat_entries = emoji_compat_metadata()
 
     assert len(flat_entries) <= len(
         compat_entries

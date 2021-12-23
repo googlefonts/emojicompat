@@ -14,9 +14,9 @@
 
 from pathlib import Path
 from typing import NamedTuple, Tuple
-from androidx.text.emoji.flatbuffer import MetadataList, MetadataItem
 
 
+# An entry in emoji_metadata.txt
 class CompatEntry(NamedTuple):
     identifier: int
     sdk_added: int
@@ -35,7 +35,7 @@ class CompatEntry(NamedTuple):
         )
 
 
-def metadata() -> Tuple[CompatEntry, ...]:
+def emoji_compat_metadata() -> Tuple[CompatEntry, ...]:
     with open(Path(__file__).parent / "emoji_metadata.txt") as f:
         return tuple(
             CompatEntry.fromstring(l)

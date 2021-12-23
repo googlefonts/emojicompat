@@ -15,8 +15,18 @@
 
 from pathlib import Path
 
+from androidx.text.emoji.flatbuffer.MetadataList import MetadataList
+
 
 def testdata_dir() -> Path:
     result = Path(__file__).parent / "testdata"
     assert result.is_dir()
     return result
+
+
+def read_2_028_raw() -> bytes:
+    return (testdata_dir() / "noto_emji_2_028.dat").read_bytes()
+
+
+def read_2_028_sample() -> MetadataList:
+    return MetadataList.GetRootAsMetadataList(bytearray(read_2_028_raw()), 0)
