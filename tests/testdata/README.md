@@ -1,0 +1,1 @@
+Sample 13.1 data extracted from meta table, Emji key, of https://android.googlesource.com/platform/external/noto-fonts/+/refs/heads/master/emoji-compat/font/NotoColorEmojiCompat.ttf at https://android.googlesource.com/platform/external/noto-fonts/+/10609ea31f757bd0d11f6204fba323042c71a09c
