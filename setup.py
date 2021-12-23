@@ -14,30 +14,16 @@
 
 from setuptools import setup, find_packages
 
-extras_require={
-    "test": [
-        "pytest",
-    ],
-    "lint": [
-        "black",
-        "pytype",
-    ],
-}
-extras_require["dev"] = extras_require["test"] + extras_require["lint"]
-
-
-def _echo(m, l):
-  print("HELLO", m, l)
-  return l
-
-setup(
+setup_args = dict(
     name="emojicompat",
     use_scm_version={"write_to": "src/emojicompat/_version.py"},
-    package_dir={
-      "": "src",
+    package_dir={'': 'src'},
+    packages=find_packages(where='src'),
+    entry_points={
+        'console_scripts': [
+            'emojicompat=emojicompat.emojicompat:main',
+        ],
     },
-    packages=find_packages(where="src"),
-    entry_points={"console_scripts": ["emojicompat=emojicompat.emojicompat:main"]},
     setup_requires=["setuptools_scm"],
     include_package_data=True,
     install_requires=[
@@ -45,7 +31,14 @@ setup(
         "fonttools>=4.28.0",
         "flatbuffers>=2.0",
     ],
-    extras_require=extras_require,
+    extras_require={
+        "dev": [
+            "pytest",
+            "pytest-clarity",
+            "black==21.7b0",
+            "pytype==2020.11.23; python_version < '3.9'",
+        ],
+    },
     # this is so we can use the built-in dataclasses module
     python_requires=">=3.7",
 
@@ -58,3 +51,7 @@ setup(
     author_email="rsheeter@google.com",
     description=("Utility to insert emojicompat metadata into an emoji font"),
 )
+
+
+if __name__ == "__main__":
+    setup(**setup_args)
