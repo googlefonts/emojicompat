@@ -5,35 +5,34 @@ on:
     branches: [main]
     tags: ["v*.*.*"]
   pull_request:
-    branches: ['**']
+    branches: [main]
 
 jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - name: Set up Python 3.9
+    - name: Set up Python 3.8
       uses: actions/setup-python@v2
       with:
-        python-version: 3.9
+        # pytype currently doesn't work with python >= 3.9
+        python-version: 3.8
     - name: Install tox
       run: pip install tox
     - name: Run style and typing checks
       run: tox -e lint
   test:
-    runs-on: ${{ matrix.config.platform }}
+    runs-on: ${{ matrix.platform }}
     strategy:
       matrix:
-        config:
-          - {platform: ubuntu-latest, python-version: 3.7}
-          - {platform: ubuntu-latest, python-version: 3.8}
-          - {platform: ubuntu-latest, python-version: 3.9}
+        python-version: [3.7, 3.8, 3.9]
+        platform: [ubuntu-latest]
     steps:
     - uses: actions/checkout@v2
-    - name: Set up Python ${{ matrix.config.python-version }}
+    - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v2
       with:
-        python-version: ${{ matrix.config.python-version }}
+        python-version: ${{ matrix.python-version }}
     - name: Install tox
       run: pip install tox
     - name: Run the tests
