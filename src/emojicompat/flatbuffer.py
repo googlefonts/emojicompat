@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import flatbuffers
+from fontTools import ttLib
 from pathlib import Path
 from typing import NamedTuple, Tuple
 from emojicompat.compat_metadata import CompatEntry
@@ -100,6 +101,10 @@ class FlatbufferList(NamedTuple):
         return builder.Output()
 
     @classmethod
+    def empty(cls) -> "FlatbufferList":
+        return cls(version=0, items=(), source_sha="")
+
+    @classmethod
     def fromflat(cls, flat: MetadataList) -> "FlatbufferList":
         return cls(
             flat.Version(),
@@ -112,3 +117,14 @@ class FlatbufferList(NamedTuple):
     @classmethod
     def fromflatbytes(cls, flat: bytes) -> "FlatbufferList":
         return cls.fromflat(MetadataList.GetRootAsMetadataList(bytearray(flat), 0))
+
+    @classmethod
+    def fromfont(cls, font: ttLib.TTFont) -> "FlatbufferList":
+        if "meta" not in font:
+            return FlatbufferList.empty()
+        emoji_metadata = font["meta"].data.get("Emji", None)
+        if emoji_metadata is None:
+            return FlatbufferList.empty()
+        return cls.fromflat(
+            MetadataList.GetRootAsMetadataList(bytearray(emoji_metadata), 0)
+        )

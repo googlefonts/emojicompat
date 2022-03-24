@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import flatbuffers
+from fontTools import ttLib
 import pytest
 import tempfile
 from typing import NamedTuple, Tuple
@@ -31,6 +32,15 @@ def test_roundtrip():
     before = FlatbufferList.fromflat(read_2_028_sample())
     after = FlatbufferList.fromflatbytes(before.toflatbytes())
     assert before == after
+
+
+def test_fromfont():
+    sample = FlatbufferList.fromflat(read_2_028_sample())
+
+    font = ttLib.TTFont(testdata_dir() / "Smiley.ttf")
+    from_font = FlatbufferList.fromfont(font)
+
+    assert sample == from_font
 
 
 # NOTE: originally wanted to confirm binary identical recreation of 2.028
