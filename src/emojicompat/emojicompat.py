@@ -27,7 +27,7 @@ _LOOKUP_TYPE_LIGATURE = 4
 FLAGS = flags.FLAGS
 
 
-flags.DEFINE_enum("op", "dump", ["dump", "setup_pua"], "What job to do.")
+flags.DEFINE_enum("op", "dump", ["dump", "setup_pua", "check"], "What job to do.")
 flags.DEFINE_string("font", None, "Font to process")
 flags.mark_flag_as_required("font")
 
@@ -124,9 +124,9 @@ def _setup_pua(font: ttLib.TTFont, flat_list: FlatbufferList):
     for cmap_table in cmap_tables[1:]:
         cmap_table.cmap = cmap_tables[0].cmap
 
-    print(f"{pua_added} PUA added")
-    print(f"{pua_fixed} PUA fixed")
-    print(f"{pua_correct} PUA already correct")
+    print(f"{pua_added} PUA missing")
+    print(f"{pua_fixed} PUA with wrong glyph")
+    print(f"{pua_correct} PUA correct")
     print(f"{len(items_by_codepoints)} Emji entries did NOT match a glyph")
 
 
@@ -143,6 +143,9 @@ def _run(_):
         _setup_pua(font, flat_list)
         print(f"Updating {font_path}")
         font.save(font_path)
+    elif FLAGS.op == "check":
+        _setup_pua(font, flat_list)
+        # Do NOT save the changes
 
 
 def main():
