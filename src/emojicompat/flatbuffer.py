@@ -24,7 +24,7 @@ from androidx.text.emoji.flatbuffer.MetadataList import *
 
 # All the fields of the flatbuffer item
 class FlatbufferItem(NamedTuple):
-    identifier: int
+    identifier: int  # the PUA for this emoji
     emoji_style: bool
     sdk_added: int
     compat_added: int

@@ -14,6 +14,7 @@
 
 from absl import app
 from absl import flags
+import dataclasses
 from emojicompat.flatbuffer import FlatbufferItem, FlatbufferList
 from emojicompat.util import bfs_base_table
 from fontTools import ttLib
@@ -30,6 +31,20 @@ FLAGS = flags.FLAGS
 flags.DEFINE_enum("op", "dump", ["dump", "setup_pua", "check"], "What job to do.")
 flags.DEFINE_string("font", None, "Font to process")
 flags.mark_flag_as_required("font")
+
+
+@dataclasses.dataclass
+class PuaCheckResult:
+    added: int = 0
+    fixed: int = 0
+    missing: int = 0
+    correct: int = 0
+
+    def print(self):
+        print(f"{self.added} PUA missing")
+        print(f"{self.fixed} PUA point at wrong glyph")
+        print(f"{self.correct} PUA correct")
+        print(f"{self.missing} Emji entries did NOT match a glyph")
 
 
 def _definitely_not_emoji(cp: int) -> bool:
@@ -57,7 +72,7 @@ def _dump(flat_list: FlatbufferList):
     print("source_sha", flat_list.source_sha)
 
 
-def _setup_pua(font: ttLib.TTFont, flat_list: FlatbufferList):
+def _setup_pua(font: ttLib.TTFont, flat_list: FlatbufferList) -> PuaCheckResult:
     # Target Android-style cmap rigging: there should be one format 12 we add to
     cmap_tables = [t for t in font["cmap"].tables if t.format == 12]
 
@@ -75,18 +90,16 @@ def _setup_pua(font: ttLib.TTFont, flat_list: FlatbufferList):
 
     items_by_codepoints = {e.codepoints: e for e in flat_list.items}
 
-    pua_added = 0
-    pua_fixed = 0
-    pua_correct = 0
+    result = PuaCheckResult()
 
     def _update_pua_entry(entry: FlatbufferItem, target_glyph: str):
-        nonlocal pua_added, pua_fixed, pua_correct, items_by_codepoints
+        nonlocal result, items_by_codepoints
         if entry.identifier not in cmap_table.cmap:
-            pua_added += 1
+            result.added += 1
         elif cmap_table.cmap[entry.identifier] == target_glyph:
-            pua_correct += 1
+            result.correct += 1
         else:
-            pua_fixed += 1
+            result.fixed += 1
         cmap_table.cmap[entry.identifier] = target_glyph
         items_by_codepoints.pop(entry.codepoints)
 
@@ -124,10 +137,9 @@ def _setup_pua(font: ttLib.TTFont, flat_list: FlatbufferList):
     for cmap_table in cmap_tables[1:]:
         cmap_table.cmap = cmap_tables[0].cmap
 
-    print(f"{pua_added} PUA missing")
-    print(f"{pua_fixed} PUA with wrong glyph")
-    print(f"{pua_correct} PUA correct")
-    print(f"{len(items_by_codepoints)} Emji entries did NOT match a glyph")
+    result.missing = len(items_by_codepoints)
+
+    return result
 
 
 def _run(_):
@@ -139,13 +151,13 @@ def _run(_):
 
     if FLAGS.op == "dump":
         _dump(flat_list)
-    elif FLAGS.op == "setup_pua":
-        _setup_pua(font, flat_list)
-        print(f"Updating {font_path}")
-        font.save(font_path)
-    elif FLAGS.op == "check":
-        _setup_pua(font, flat_list)
-        # Do NOT save the changes
+    elif FLAGS.op in {"setup_pua", "check"}:
+        result = _setup_pua(font, flat_list)
+        result.print()
+        if FLAGS.op == "setup_pua":
+            print(f"Updating {font_path}")
+            font.save(font_path)
+        # Else it was a check, do NOT save the changes
 
 
 def main():
