@@ -4,7 +4,7 @@
 
 # emojicompat
 
-TODO describe
+Utility to help create and verify fonts for https://developer.android.com/guide/topics/ui/look-and-feel/emoji-compat.
 
 Requires Python 3.7 or greater.
 
