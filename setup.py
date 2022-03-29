@@ -28,14 +28,14 @@ setup_args = dict(
     include_package_data=True,
     install_requires=[
         "absl-py>=0.9.0",
-        "fonttools>=4.28.0",
+        "fonttools>=4.31.2",
         "flatbuffers>=2.0",
     ],
     extras_require={
         "dev": [
             "pytest",
             "pytest-clarity",
-            "black==21.12b0",
+            "black==22.3.0",
             "pytype==2020.11.23; python_version < '3.9'",
         ],
     },
