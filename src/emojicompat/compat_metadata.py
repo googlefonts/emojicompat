@@ -35,8 +35,12 @@ class CompatEntry(NamedTuple):
         )
 
 
+def emoji_metadata_file() -> Path:
+    return Path(__file__).parent / "emoji_metadata.txt"
+
+
 def emoji_compat_metadata() -> Tuple[CompatEntry, ...]:
-    with open(Path(__file__).parent / "emoji_metadata.txt") as f:
+    with open(emoji_metadata_file(), "r") as f:
         return tuple(
             CompatEntry.fromstring(l)
             for l in f

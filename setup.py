@@ -30,6 +30,7 @@ setup_args = dict(
         "absl-py>=0.9.0",
         "fonttools>=4.31.2",
         "flatbuffers>=2.0",
+        "notofonttools>=0.2.17",  # unicode 15
     ],
     extras_require={
         "dev": [
