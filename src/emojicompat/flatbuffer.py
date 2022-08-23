@@ -14,12 +14,36 @@
 
 import flatbuffers
 from fontTools import ttLib
+from nototools.unicode_data import is_regional_indicator, get_presentation_default_emoji
 from pathlib import Path
 from typing import NamedTuple, Tuple
 from emojicompat.compat_metadata import CompatEntry
 
 from androidx.text.emoji.flatbuffer.MetadataItem import *
 from androidx.text.emoji.flatbuffer.MetadataList import *
+
+
+# Forced a few extras to emoji style to match behavior of implementation we are replacing
+_EMOJI_STYLE = {
+    0x270C,
+    0x2600,
+    0x2601,
+    0x260E,
+    0x261D,
+    0x263A,
+    0x2665,
+    0x2660,
+    0x2663,
+    0x2666,
+    0x2744,
+    0x2764,
+} | get_presentation_default_emoji()
+
+
+def _is_emoji_style(codepoints: Tuple[int, ...]) -> bool:
+    if len(codepoints) != 1:
+        return False
+    return codepoints[0] in _EMOJI_STYLE
 
 
 # All the fields of the flatbuffer item
@@ -52,6 +76,26 @@ class FlatbufferItem(NamedTuple):
             tuple(flat.Codepoints(i) for i in range(flat.CodepointsLength())),
         )
 
+    @classmethod
+    def from_compat_entry(cls, entry: CompatEntry) -> "FlatbufferItem":
+        # w/h is only useful for CBDT and in CBDT should always be 136x128
+        width, height = 136, 128
+        # legacy emojicompat uses 0,0 for region flags but it's not clear this is correct
+        if all(is_regional_indicator(cp) for cp in entry.codepoints):
+            width, height = 0, 0
+
+        present_as_emoji = get_presentation_default_emoji()
+
+        return cls(
+            entry.identifier,
+            _is_emoji_style(entry.codepoints),
+            entry.sdk_added,
+            entry.compat_added,
+            width,
+            height,
+            entry.codepoints,
+        )
+
 
 # All the fields of the flatbuffer list
 class FlatbufferList(NamedTuple):
@@ -59,7 +103,7 @@ class FlatbufferList(NamedTuple):
     items: Tuple[FlatbufferItem, ...]
     source_sha: str
 
-    def compat_entries(self) -> Tuple[CompatEntry]:
+    def compat_entries(self) -> Tuple[CompatEntry, ...]:
         return tuple(e.compat_entry() for e in self.items)
 
     def toflatbytes(self) -> bytearray:
@@ -127,4 +171,14 @@ class FlatbufferList(NamedTuple):
             return FlatbufferList.empty()
         return cls.fromflat(
             MetadataList.GetRootAsMetadataList(bytearray(emoji_metadata), 0)
+        )
+
+    @classmethod
+    def from_compat_entries(
+        cls, version: int, entries: Tuple[CompatEntry, ...], source_sha: str
+    ) -> "FlatbufferList":
+        return cls(
+            version,
+            tuple(FlatbufferItem.from_compat_entry(e) for e in entries),
+            source_sha,
         )

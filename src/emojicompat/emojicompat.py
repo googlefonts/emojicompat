@@ -28,7 +28,9 @@ _LOOKUP_TYPE_LIGATURE = 4
 FLAGS = flags.FLAGS
 
 
-flags.DEFINE_enum("op", "dump", ["dump", "setup_pua", "check"], "What job to do.")
+flags.DEFINE_enum(
+    "op", "dump", ["dump", "setup", "setup_pua", "check"], "What job to do."
+)
 flags.DEFINE_string("font", None, "Font to process")
 flags.mark_flag_as_required("font")
 
@@ -151,6 +153,9 @@ def _run(_):
 
     if FLAGS.op == "dump":
         _dump(flat_list)
+    if FLAGS.op == "setup":
+        result = _setup()
+        result.print(font)
     elif FLAGS.op in {"setup_pua", "check"}:
         result = _setup_pua(font, flat_list)
         result.print()
