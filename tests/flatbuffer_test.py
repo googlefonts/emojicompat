@@ -49,9 +49,7 @@ def test_from_compat_entries():
     sample = FlatbufferList.fromflat(read_2_028_sample())
     # sample = sample._replace(items=sample.items[:128])  # TEMPORARY
     compat_entries = emoji_compat_metadata()[: len(sample.items)]
-    from_compat = FlatbufferList.from_compat_entries(
-        sample.version, compat_entries, sample.source_sha
-    )
+    from_compat = FlatbufferList.from_compat_entries(compat_entries, sample.source_sha)
 
     assert sample._replace(items=()) == from_compat._replace(items=())
 

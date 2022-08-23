@@ -15,10 +15,13 @@
 from absl import app
 from absl import flags
 import dataclasses
+from emojicompat.compat_metadata import emoji_compat_metadata
 from emojicompat.flatbuffer import FlatbufferItem, FlatbufferList
 from emojicompat.util import bfs_base_table
 from fontTools import ttLib
 from fontTools.ttLib.tables import otTables as ot
+import hashlib
+import io
 from pathlib import Path
 
 
@@ -72,6 +75,27 @@ def _dump(flat_list: FlatbufferList):
         fields["codepoints"] = ",".join(f"U+{c:04x}" for c in fields["codepoints"])
         print(item_format.format(**fields))
     print("source_sha", flat_list.source_sha)
+
+
+def _hash_of_font_without_compat_data(font: ttLib.TTFont) -> str:
+    # ensuring meta is present makes the hash stable on repeat runs against an input font w/o meta
+    if "meta" in font:
+        font["meta"] = ttLib.newTable("meta")
+    font["meta"].data.pop("Emji", None)
+
+    font_io = io.BytesIO()
+    font.save(font_io)
+    sha1 = hashlib.sha1()
+    sha1.update(font_io.getvalue())
+    font_io.close()
+
+    return sha1.hexdigest()
+
+
+def _setup_meta(font: ttLib.TTFont, flat_list: FlatbufferList):
+    if "meta" not in font:
+        font["meta"] = ttLib.newTable("meta")
+    font["meta"].data["Emji"] = flat_list.toflatbytes()
 
 
 def _setup_pua(font: ttLib.TTFont, flat_list: FlatbufferList) -> PuaCheckResult:
@@ -153,16 +177,22 @@ def _run(_):
 
     if FLAGS.op == "dump":
         _dump(flat_list)
-    if FLAGS.op == "setup":
-        result = _setup()
-        result.print(font)
-    elif FLAGS.op in {"setup_pua", "check"}:
+    elif FLAGS.op in {"setup", "setup_pua", "check"}:
+        if FLAGS.op == "setup":
+            flat_compat = FlatbufferList.from_compat_entries(
+                emoji_compat_metadata(), _hash_of_font_without_compat_data(font)
+            )
+            if flat_compat != flat_list:
+                print("Updating 'meta'")
+                flat_list = flat_compat
+                _setup_meta(font, flat_list)
+            else:
+                print("'meta' is already correct")
         result = _setup_pua(font, flat_list)
         result.print()
-        if FLAGS.op == "setup_pua":
+        if FLAGS.op != "check":
             print(f"Updating {font_path}")
             font.save(font_path)
-        # Else it was a check, do NOT save the changes
 
 
 def main():

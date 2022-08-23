@@ -175,10 +175,10 @@ class FlatbufferList(NamedTuple):
 
     @classmethod
     def from_compat_entries(
-        cls, version: int, entries: Tuple[CompatEntry, ...], source_sha: str
+        cls, entries: Tuple[CompatEntry, ...], source_sha: str
     ) -> "FlatbufferList":
         return cls(
-            version,
+            max(e.compat_added for e in entries),
             tuple(FlatbufferItem.from_compat_entry(e) for e in entries),
             source_sha,
         )
