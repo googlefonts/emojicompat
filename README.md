@@ -8,6 +8,21 @@ Utility to help create and verify fonts for https://developer.android.com/guide/
 
 Requires Python 3.7 or greater.
 
+## Support new unicode sequences
+
+Examples are shown based on upgrade from Unicode 14 to 15.
+
+1. Update the minimum https://github.com/googlefonts/nototools version in setup.py to one that supports the latest unicode
+    `"notofonttools>=0.2.17",  # unicode 15`
+1. Generate an update to `https://github.com/googlefonts/emojicompat/blob/main/src/emojicompat/emoji_metadata.txt`.
+   * You must know the sdkAdded value for the new codepoints
+
+   ```
+   # in a venv
+   pip install -e .[dev]
+   python update_emoji_metadata.py --sdk_added 32
+   ```
+
 ## Test
 
 Install the dev dependencies specified in [`extras_require`](https://github.com/googlefonts/emojicompat/blob/main/setup.py).
