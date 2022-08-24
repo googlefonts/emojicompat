@@ -25,7 +25,7 @@ from testdata_helper import *
 
 def test_parse_sample_dat():
     flat_list = read_2_028_sample()
-    assert flat_list.ListLength() > 0  # verification of exact contents elsewhere
+    assert flat_list.ListLength() > 1000  # verification of exact contents elsewhere
 
 
 def test_roundtrip():
@@ -41,6 +41,28 @@ def test_fromfont():
     from_font = FlatbufferList.fromfont(font)
 
     assert sample == from_font
+
+
+def test_from_compat_entries():
+    # The entries up to what is in the 2.028 sample should be identical
+
+    sample = FlatbufferList.fromflat(read_2_028_sample())
+    # sample = sample._replace(items=sample.items[:128])  # TEMPORARY
+    compat_entries = emoji_compat_metadata()[: len(sample.items)]
+    from_compat = FlatbufferList.from_compat_entries(compat_entries, sample.source_sha)
+
+    assert sample._replace(items=()) == from_compat._replace(items=())
+
+    # Try to get a nicer diff
+    errors = []
+    for idx, (e1, e2) in enumerate(zip(sample.items, from_compat.items)):
+        if e1 == e2:
+            continue
+        errors.append((e1, e2))
+    assert [e[0] for e in errors] == [e[1] for e in errors]
+
+    # Match the whole darn thing just to be sure
+    assert sample == from_compat
 
 
 # NOTE: originally wanted to confirm binary identical recreation of 2.028

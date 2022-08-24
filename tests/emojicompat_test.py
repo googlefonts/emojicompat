@@ -88,3 +88,7 @@ def _compat_item(pua: int, codepoints: Tuple[int, ...]) -> FlatbufferItem:
         height=42,
         codepoints=codepoints,
     )
+
+
+# TODO test addition of meta *and* PUA
+# TODO test multiple addition of meta and PUA
