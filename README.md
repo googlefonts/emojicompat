@@ -8,7 +8,35 @@ Utility to help create and verify fonts for https://developer.android.com/guide/
 
 Requires Python 3.7 or greater.
 
-## Support new unicode sequences
+## Usage
+
+```
+# Assumes current directory is the root of a clone of the repo
+
+# Make a venv your favorite way. Mine is:
+python3 -m venv venv
+source venv/bin/activate
+
+# Install emojicompat
+pip install -e .
+
+# You should now have emojicompat on path
+which emojicompat
+# should return path/to/current/venv/bin/emojicompat
+
+# Add metadata to a font
+emojicompat --op setup --font /tmp/Noto-COLRv1.ttf
+
+# Validate the metadata in a font
+emojicompat --op check --font /tmp/Noto-COLRv1.ttf
+
+# Dump the metadata in a font
+emojicompat --op dump --font /tmp/Noto-COLRv1.ttf
+```
+
+## Developer instructions
+
+### Support new unicode sequences
 
 Examples are shown based on upgrade from Unicode 14 to 15.
 
@@ -23,7 +51,7 @@ Examples are shown based on upgrade from Unicode 14 to 15.
    python update_emoji_metadata.py --sdk_added 32
    ```
 
-## Test
+### Test
 
 Install the dev dependencies specified in [`extras_require`](https://github.com/googlefonts/emojicompat/blob/main/setup.py).
 
@@ -44,6 +72,6 @@ You can also use [pytest](https://docs.pytest.org/) to test the specified files 
 pytest tests/svg_test.py
 ```
 
-## Releasing
+### Releasing
 
 See https://googlefonts.github.io/python#make-a-release.
