@@ -79,7 +79,7 @@ def _dump(flat_list: FlatbufferList):
 
 def _hash_of_font_without_compat_data(font: ttLib.TTFont) -> str:
     # ensuring meta is present makes the hash stable on repeat runs against an input font w/o meta
-    if "meta" in font:
+    if "meta" not in font:
         font["meta"] = ttLib.newTable("meta")
     font["meta"].data.pop("Emji", None)
 
