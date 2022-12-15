@@ -179,7 +179,9 @@ def _require_bitmap_header_version_2(font: ttLib.TTFont, will_fix: bool):
                 print(f"{msg}, fixing that for you...")
             else:
                 print(f"{msg}, do NOT use it for emojicompat")
-                print("         Running any emojicompat operation that saves the font will fix the problem")
+                print(
+                    "         Running any emojicompat operation that saves the font will fix the problem"
+                )
         table.version = 2
 
 
