@@ -172,6 +172,8 @@ def _setup_pua(font: ttLib.TTFont, flat_list: FlatbufferList) -> PuaCheckResult:
 # to have header version 3.
 def _require_bitmap_header_version_2(font: ttLib.TTFont, will_fix: bool):
     for tag in ("CBDT", "CBLC"):
+        if tag not in font:
+            continue
         table = font[tag]
         if table.version != 2:
             msg = f"WARNING: {tag} is at version {table.version}. Version 2 is required"
