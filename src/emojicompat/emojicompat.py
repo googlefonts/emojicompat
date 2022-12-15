@@ -168,6 +168,23 @@ def _setup_pua(font: ttLib.TTFont, flat_list: FlatbufferList) -> PuaCheckResult:
     return result
 
 
+# Old versions of Android like API level 23 don't like CBLC or CBDT
+# to have header version 3.
+def _require_bitmap_header_version_2(font: ttLib.TTFont, will_fix: bool):
+    for tag in ("CBDT", "CBLC"):
+        table = font[tag]
+        if table.version != 2:
+            msg = f"WARNING: {tag} is at version {table.version}. Version 2 is required"
+            if will_fix:
+                print(f"{msg}, fixing that for you...")
+            else:
+                print(f"{msg}, do NOT use it for emojicompat")
+                print(
+                    "         Running any emojicompat operation that saves the font will fix the problem"
+                )
+        table.version = 2
+
+
 def _run(_):
     font_path = Path(FLAGS.font)
     assert font_path.is_file()
@@ -177,6 +194,7 @@ def _run(_):
 
     if FLAGS.op == "dump":
         _dump(flat_list)
+        _require_bitmap_header_version_2(font, False)
     elif FLAGS.op in {"setup", "setup_pua", "check"}:
         if FLAGS.op == "setup":
             flat_compat = FlatbufferList.from_compat_entries(
@@ -190,6 +208,7 @@ def _run(_):
                 print("'meta' is already correct")
         result = _setup_pua(font, flat_list)
         result.print()
+        _require_bitmap_header_version_2(font, FLAGS.op != "check")
         if FLAGS.op != "check":
             print(f"Updating {font_path}")
             font.save(font_path)
