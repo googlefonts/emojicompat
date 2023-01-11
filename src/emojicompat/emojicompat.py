@@ -187,6 +187,11 @@ def _require_bitmap_header_version_2(font: ttLib.TTFont, will_fix: bool):
         table.version = 2
 
 
+def _check_bitmap_size(flat_list: FlatbufferList):
+    for item in flat_list.items:
+        if item.width != 136 or item.height != 128:
+            print(",".join(f"U+{c:04x}" for c in item.codepoints), f"has invalid dimensions: {item.width}x{item.height}; must be 136x128")
+
 def _run(_):
     font_path = Path(FLAGS.font)
     assert font_path.is_file()
@@ -197,6 +202,7 @@ def _run(_):
     if FLAGS.op == "dump":
         _dump(flat_list)
         _require_bitmap_header_version_2(font, False)
+        _check_bitmap_size(flat_list)
     elif FLAGS.op in {"setup", "setup_pua", "check"}:
         if FLAGS.op == "setup":
             flat_compat = FlatbufferList.from_compat_entries(
@@ -211,6 +217,7 @@ def _run(_):
         result = _setup_pua(font, flat_list)
         result.print()
         _require_bitmap_header_version_2(font, FLAGS.op != "check")
+        _check_bitmap_size(flat_list)
         if FLAGS.op != "check":
             print(f"Updating {font_path}")
             font.save(font_path)
