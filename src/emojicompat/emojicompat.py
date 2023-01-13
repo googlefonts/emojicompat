@@ -190,7 +190,11 @@ def _require_bitmap_header_version_2(font: ttLib.TTFont, will_fix: bool):
 def _check_bitmap_size(flat_list: FlatbufferList):
     for item in flat_list.items:
         if item.width != 136 or item.height != 128:
-            print(",".join(f"U+{c:04x}" for c in item.codepoints), f"has invalid dimensions: {item.width}x{item.height}; must be 136x128")
+            print(
+                ",".join(f"U+{c:04x}" for c in item.codepoints),
+                f"has invalid dimensions: {item.width}x{item.height}; must be 136x128",
+            )
+
 
 def _run(_):
     font_path = Path(FLAGS.font)
