@@ -43,10 +43,21 @@ def test_fromfont():
     assert sample == from_font
 
 
+def _sample_without_0_sizes() -> FlatbufferList:
+    sample = FlatbufferList.fromflat(read_2_028_sample())
+    # width/height are 0,0 for some things in the 2.028 sample; we now never want that
+    items = list(sample.items)
+    for i in range(len(items)):
+        e = items[i]
+        if (e.width, e.height) == (0, 0):
+            items[i] = e._replace(width=136, height=128)
+    return sample._replace(items=tuple(items))
+
+
 def test_from_compat_entries():
     # The entries up to what is in the 2.028 sample should be identical
 
-    sample = FlatbufferList.fromflat(read_2_028_sample())
+    sample = _sample_without_0_sizes()
     # sample = sample._replace(items=sample.items[:128])  # TEMPORARY
     compat_entries = emoji_compat_metadata()[: len(sample.items)]
     from_compat = FlatbufferList.from_compat_entries(compat_entries, sample.source_sha)
