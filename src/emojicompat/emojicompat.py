@@ -23,6 +23,7 @@ from fontTools.ttLib.tables import otTables as ot
 import hashlib
 import io
 from pathlib import Path
+import sys
 
 
 _LOOKUP_TYPE_LIGATURE = 4
@@ -170,7 +171,8 @@ def _setup_pua(font: ttLib.TTFont, flat_list: FlatbufferList) -> PuaCheckResult:
 
 # Old versions of Android like API level 23 don't like CBLC or CBDT
 # to have header version 3.
-def _require_bitmap_header_version_2(font: ttLib.TTFont, will_fix: bool):
+def _require_bitmap_header_version_2(font: ttLib.TTFont, will_fix: bool) -> bool:
+    result = True
     for tag in ("CBDT", "CBLC"):
         if tag not in font:
             continue
@@ -180,11 +182,25 @@ def _require_bitmap_header_version_2(font: ttLib.TTFont, will_fix: bool):
             if will_fix:
                 print(f"{msg}, fixing that for you...")
             else:
+                result = False
                 print(f"{msg}, do NOT use it for emojicompat")
                 print(
                     "         Running any emojicompat operation that saves the font will fix the problem"
                 )
         table.version = 2
+    return result
+
+
+def _check_bitmap_size(flat_list: FlatbufferList) -> bool:
+    result = True
+    for item in flat_list.items:
+        if item.width != 136 or item.height != 128:
+            result = False
+            print(
+                ",".join(f"U+{c:04x}" for c in item.codepoints),
+                f"has invalid dimensions: {item.width}x{item.height}; must be 136x128",
+            )
+    return result
 
 
 def _run(_):
@@ -194,9 +210,12 @@ def _run(_):
     font = ttLib.TTFont(font_path)
     flat_list = FlatbufferList.fromfont(font)
 
+    valid = True
+
     if FLAGS.op == "dump":
         _dump(flat_list)
-        _require_bitmap_header_version_2(font, False)
+        valid = _require_bitmap_header_version_2(font, False) and valid
+        valid = _check_bitmap_size(flat_list) and valid
     elif FLAGS.op in {"setup", "setup_pua", "check"}:
         if FLAGS.op == "setup":
             flat_compat = FlatbufferList.from_compat_entries(
@@ -210,10 +229,14 @@ def _run(_):
                 print("'meta' is already correct")
         result = _setup_pua(font, flat_list)
         result.print()
-        _require_bitmap_header_version_2(font, FLAGS.op != "check")
+        valid = _require_bitmap_header_version_2(font, FLAGS.op != "check") and valid
+        valid = _check_bitmap_size(flat_list) and valid
         if FLAGS.op != "check":
             print(f"Updating {font_path}")
             font.save(font_path)
+
+    if not valid:
+        sys.exit(1)
 
 
 def main():

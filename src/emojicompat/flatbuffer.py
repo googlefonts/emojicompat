@@ -80,10 +80,6 @@ class FlatbufferItem(NamedTuple):
     def from_compat_entry(cls, entry: CompatEntry) -> "FlatbufferItem":
         # w/h is only useful for CBDT and in CBDT should always be 136x128
         width, height = 136, 128
-        # legacy emojicompat uses 0,0 for region flags but it's not clear this is correct
-        if all(is_regional_indicator(cp) for cp in entry.codepoints):
-            width, height = 0, 0
-
         present_as_emoji = get_presentation_default_emoji()
 
         return cls(
