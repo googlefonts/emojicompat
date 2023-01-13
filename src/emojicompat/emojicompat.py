@@ -170,13 +170,15 @@ def _setup_pua(font: ttLib.TTFont, flat_list: FlatbufferList) -> PuaCheckResult:
 
 # Old versions of Android like API level 23 don't like CBLC or CBDT
 # to have header version 3.
-def _require_bitmap_header_version_2(font: ttLib.TTFont, will_fix: bool):
+def _require_bitmap_header_version_2(font: ttLib.TTFont, will_fix: bool) -> bool:
+    result = False
     for tag in ("CBDT", "CBLC"):
         if tag not in font:
             continue
         table = font[tag]
         if table.version != 2:
             msg = f"WARNING: {tag} is at version {table.version}. Version 2 is required"
+            result = True
             if will_fix:
                 print(f"{msg}, fixing that for you...")
             else:
@@ -185,15 +187,19 @@ def _require_bitmap_header_version_2(font: ttLib.TTFont, will_fix: bool):
                     "         Running any emojicompat operation that saves the font will fix the problem"
                 )
         table.version = 2
+    return result
 
 
-def _check_bitmap_size(flat_list: FlatbufferList):
+def _check_bitmap_size(flat_list: FlatbufferList) -> bool:
+    result = False
     for item in flat_list.items:
         if item.width != 136 or item.height != 128:
+            result = True
             print(
                 ",".join(f"U+{c:04x}" for c in item.codepoints),
                 f"has invalid dimensions: {item.width}x{item.height}; must be 136x128",
             )
+    return result
 
 
 def _run(_):
