@@ -27,21 +27,21 @@ setup_args = dict(
     setup_requires=["setuptools_scm"],
     include_package_data=True,
     install_requires=[
-        "absl-py>=0.9.0",
-        "fonttools>=4.31.2",
+        "absl-py>=2.0",
+        "fonttools>=4.43.1",
         "flatbuffers>=2.0",
-        "notofonttools>=0.2.17",  # unicode 15
+        "notofonttools>=0.2.19",  # unicode 15.1
     ],
     extras_require={
         "dev": [
             "pytest",
             "pytest-clarity",
             "black==23.10.1",
-            "pytype==2020.11.23; python_version < '3.9'",
+            "pytype==2023.10.31",
         ],
     },
     # this is so we can use the built-in dataclasses module
-    python_requires=">=3.7",
+    python_requires=">=3.11",
 
     # this is for type checker to use our inline type hints:
     # https://www.python.org/dev/peps/pep-0561/#id18
