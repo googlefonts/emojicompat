@@ -37,7 +37,7 @@ setup_args = dict(
             "pytest",
             "pytest-clarity",
             "black==23.10.1",
-            "pytype==2023.10.31",
+            "pytype==2023.12.18",
         ],
     },
     # this is so we can use the built-in dataclasses module
